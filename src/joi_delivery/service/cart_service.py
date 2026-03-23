@@ -1,6 +1,5 @@
-from typing import Optional
+from fastapi import HTTPException
 
-from ..controller.models import AddProductRequest, CartProductInfo
 from ..domain.cart import Cart
 from ..domain.user import User
 from ..service.product_service import ProductService
@@ -13,20 +12,32 @@ class CartService:
         self.product_service = product_service
         self.user_carts = cart_for_users
 
-    def add_product_to_cart_for_user(self, add_product_request: AddProductRequest) -> CartProductInfo:
-        user = self.user_service.fetch_user_by_id(add_product_request.user_id)
-        cart = self.fetch_cart_for_user(user)
-        product = self.product_service.get_product(add_product_request.product_id, add_product_request.outlet_id)
-        cart.products.append(product)
-
-        result = CartProductInfo(cart=cart.to_json(), product=product.to_json(), selling_price=product.selling_price)
-        return result
-
-    def get_cart_for_user(self, user_id: str) -> Optional[Cart]:
+    def add_product_to_cart_for_user(self, user_id: str, product_id: str, outlet_id: str) -> dict:
         user = self.user_service.fetch_user_by_id(user_id)
-        return self.fetch_cart_for_user(user)
-
-    def fetch_cart_for_user(self, user: User) -> Optional[Cart]:
         if user is None:
-            return None
+            raise HTTPException(status_code=404, detail=f"User '{user_id}' not found")
+
+        cart = self.fetch_cart_for_user(user)
+        if cart is None:
+            raise HTTPException(status_code=404, detail=f"Cart not found for user '{user_id}'")
+
+        product = self.product_service.get_product(product_id, outlet_id)
+        if product is None:
+            raise HTTPException(status_code=404, detail=f"Product '{product_id}' not found in outlet '{outlet_id}'")
+
+        cart.products.append(product)
+        return {"cart": cart.to_json(), "product": product.to_json(), "selling_price": product.selling_price}
+
+    def get_cart_for_user(self, user_id: str) -> Cart:
+        user = self.user_service.fetch_user_by_id(user_id)
+        if user is None:
+            raise HTTPException(status_code=404, detail=f"User '{user_id}' not found")
+
+        cart = self.fetch_cart_for_user(user)
+        if cart is None:
+            raise HTTPException(status_code=404, detail=f"Cart not found for user '{user_id}'")
+
+        return cart
+
+    def fetch_cart_for_user(self, user: User) -> Cart | None:
         return self.user_carts.get(user.user_id)

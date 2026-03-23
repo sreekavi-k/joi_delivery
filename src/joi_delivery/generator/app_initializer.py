@@ -49,10 +49,11 @@ class SeedData:
 store101 = SeedData.create_store("Fresh Picks", "store101")
 store102 = SeedData.create_store("Natural Choice", "store102")
 user101 = SeedData.create_user("user101", "John", "Doe")
+user102 = SeedData.create_user("user102", "Rachel", "Zane")
 
 cart_for_users = {
     "user101": SeedData.create_cart_for_user("user101", "John", "Doe", "cart101", store101, user101),
-    "user102": SeedData.create_cart_for_user("user102", "Rachel", "Zane", "cart102", store101, user101),
+    "user102": SeedData.create_cart_for_user("user102", "Rachel", "Zane", "cart102", store101, user102),
 }
 
 grocery_products = [
@@ -61,7 +62,7 @@ grocery_products = [
     SeedData.create_grocery_product("Crackers", "product103", store101),
 ]
 
-users = [user101]
+users = [user101, user102]
 stores = [store101, store102]
 
 

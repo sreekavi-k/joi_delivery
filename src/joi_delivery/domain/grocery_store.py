@@ -8,7 +8,7 @@ from .outlet import Outlet
 
 @dataclass
 class GroceryStore(Outlet):
-    inventory: set[GroceryProduct] = field(default_factory=set)
+    inventory: list[GroceryProduct] = field(default_factory=list)
 
     def to_json(self):
         base_json = super().to_json()
